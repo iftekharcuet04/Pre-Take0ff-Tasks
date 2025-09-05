@@ -1,3 +1,63 @@
+# Booking System
+## Problem Statement
+
+We need a simple booking system where multiple users can book seats concurrently.
+The system must ensure:
+
+### 1. Availability
+
+Only 100 seats are available in total.
+
+### 2. No Double Allocation
+
+Users should not be able to overbook (no double allocation).
+
+### 3. Concurrency Safety
+
+Concurrent booking requests should be handled safely.
+
+### 4. Clear Booking Status
+
+The system should provide clear booking status (success or failure).
+
+## Flow
+1. User Request
+
+A user sends a booking request to the backend (POST /book).
+
+Request contains user ID (or session info).
+
+2. API Backend
+
+Booking Service receives the request.
+
+It interacts with the database to check available seats.
+
+Uses row-level locking or atomic decrement to ensure concurrency safety.
+
+If seats are available, it allocates and confirms booking.
+
+If not, returns failure (Sold Out).
+
+###  Database
+
+Table `system_status` stores total seats.
+
+Table `bookings` stores user bookings.
+
+Concurrency handled via transactions + `SELECT … FOR UPDATE`.
+
+###  Queue (Optional for Scale)
+
+If traffic is very high, booking requests can be placed into a Redis Queue (BullMQ/Sidekiq).
+
+Worker processes requests one by one to avoid race conditions.
+
+###  Status API
+
+Users can query booking status (GET `/bookings/:userId`).
+
+
 ## Requirements
 
 ### Functional Requirements
@@ -63,7 +123,21 @@ CREATE TABLE bookings (
 );
 ```
 
+## Forntend
 
+``` typescript
+class BookingAPI {
+  async bookSeat(userId: string): Promise<void> {
+    const res = await fetch("/book", { method: "POST", body: JSON.stringify({ userId }) });
+    return res.json();
+  }
+
+  async getStatus(userId: string): Promise<void> {
+    const res = await fetch(`/bookings/${userId}`);
+    return res.json();
+  }
+}
+```
 
 
 ## Booking Logic (Concurrency Safe)
@@ -193,7 +267,7 @@ function broadcastAvailability(count) {
 
 ```
 
-## Error Handling
+
 
 ### Error Handling
 
@@ -201,11 +275,15 @@ function broadcastAvailability(count) {
 *   Duplicate booking attempt → "Already Booked".
 *   Transaction/DB failure → "Try again later".
 
-## Trade-offs
 
-### Direct DB Locking
+### Trade-offs
 
-Simpler, but adds latency.
+
+
+#### Pessimistic Locking
+
+Simpler, safe, but may limit throughput under very high concurrency.
+
 
 ### Queue-based
 
@@ -215,7 +293,6 @@ Scalable, but adds slight latency.
 
 Fast, but needs Redis for persistence to avoid inconsistency.
 
-## Future Improvements
 
 ### Future Improvements
 
