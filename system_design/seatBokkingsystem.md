@@ -21,13 +21,13 @@ Concurrent booking requests should be handled safely.
 The system should provide clear booking status (success or failure).
 
 ## Flow
-1. User Request
+### User Request
 
 A user sends a booking request to the backend (POST /book).
 
 Request contains user ID (or session info).
 
-2. API Backend
+### API Backend
 
 Booking Service receives the request.
 
