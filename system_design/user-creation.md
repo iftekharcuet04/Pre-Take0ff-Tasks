@@ -12,6 +12,7 @@ We need a system where:
 
 ## Architecture
 
+``` text
 [Frontend]
    |
    | 1) POST /uploads (CSV)
@@ -33,7 +34,7 @@ We need a system where:
         |                                   |
         +--> [Logs + Metrics + Traces] <----+
 
-
+```
 
 
 ## Data Model
