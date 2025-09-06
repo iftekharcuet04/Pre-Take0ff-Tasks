@@ -52,7 +52,7 @@ Pub/Sub: broadcasts seat updates via SSE/WebSocket.
 ## Flow
 
 User sends a booking request (POST /book) with their userId.
-==============================================================
+--------------------------------------------------------------
 
 Backend checks availability in DB (row-level lock or atomic decrement).
 --------------------------------------------------------------
@@ -106,7 +106,32 @@ class BookingAPI {
 
 ## Booking Logic (Concurrency Safe)
 
-### Backend Service (TypeScript) with  Pessimistic Locking (MySQL)
+### Pessimistic Locking (MySQL)
+
+```sql 
+BEGIN;
+
+-- lock one available seat
+SELECT id FROM seats WHERE is_booked = FALSE LIMIT 1 FOR UPDATE;
+
+-- if found, allocate it
+UPDATE seats
+SET is_booked = TRUE, booked_by = :userId, booked_at = NOW()
+WHERE id = :seatId;
+
+-- update global counter
+UPDATE system_status
+SET available_seats = available_seats - 1
+WHERE id = 1;
+
+-- insert booking record
+INSERT INTO bookings (user_id, seat_id) VALUES (:userId, :seatId);
+
+COMMIT;
+
+```
+
+## Backend Service (TypeScript) 
 
 ```typescript
 
