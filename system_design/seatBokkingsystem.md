@@ -4,23 +4,16 @@
 We need a simple booking system where multiple users can book seats concurrently.
 The system must ensure:
 
-### 1. Availability
+1. Only 100 seats are available in total.
 
-Only 100 seats are available in total.
+2. Users should not be able to overbook (no double allocation).
 
-### 2. No Double Allocation
+3. Concurrent booking requests should be handled safely.
 
-Users should not be able to overbook (no double allocation).
-
-### 3. Concurrency Safety
-
-Concurrent booking requests should be handled safely.
-
-### 4. Clear Booking Status
-
-The system should provide clear booking status (success or failure).
+4. The system should provide clear booking status (success or failure).
 
 ## Flow
+
 ### User Request
 
 A user sends a booking request to the backend (POST /book).
@@ -100,8 +93,6 @@ Cache: for fast reads/ counters.
 Pub/Sub: to broadcast seat-count updates to connected frontends (used by SSE / WebSocket).
 
 ```
-
-
 
 
 ## Data Model
