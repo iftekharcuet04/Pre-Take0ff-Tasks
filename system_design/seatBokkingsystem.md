@@ -12,43 +12,7 @@ The system must ensure:
 
 4. The system should provide clear booking status (success or failure).
 
-## Flow
 
-### User Request
-
-A user sends a booking request to the backend (POST /book).
-
-Request contains user ID (or session info).
-
-### API Backend
-
-Booking Service receives the request.
-
-It interacts with the database to check available seats.
-
-Uses row-level locking or atomic decrement to ensure concurrency safety.
-
-If seats are available, it allocates and confirms booking.
-
-If not, returns failure (Sold Out).
-
-###  Database
-
-Table `system_status` stores total seats.
-
-Table `bookings` stores user bookings.
-
-Concurrency handled via transactions + `SELECT … FOR UPDATE`.
-
-###  Queue (Optional for Scale)
-
-If traffic is very high, booking requests can be placed into a Redis Queue (BullMQ/Sidekiq).
-
-Worker processes requests one by one to avoid race conditions.
-
-###  Status API
-
-Users can query booking status (GET `/bookings/:userId`).
 
 
 ## Requirements
@@ -68,7 +32,7 @@ Users can query booking status (GET `/bookings/:userId`).
 
 
 
-## High-Level Architecture
+## Architecture
 
 ``` text
 [Frontend / App]
@@ -93,6 +57,27 @@ Cache: for fast reads/ counters.
 Pub/Sub: to broadcast seat-count updates to connected frontends (used by SSE / WebSocket).
 
 ```
+
+## Flow
+
+### User Request
+
+A user sends a booking request to the backend (POST /book).
+
+Request contains user ID (or session info).
+
+### API Backend
+
+Booking Service receives the request.
+
+It interacts with the database to check available seats.
+
+Uses row-level locking or atomic decrement to ensure concurrency safety.
+
+If seats are available, it allocates and confirms booking.
+
+If not, returns failure (Sold Out).
+
 
 
 ## Data Model
